@@ -129,7 +129,11 @@ export const summarizeMeeting = async (meetingNotes) => {
     Meeting Notes:
     ${meetingNotes}
     
-    Format the summary in a clear, structured way.
+    Format the summary in a clear, structured way using Markdown:
+    - Use ## for section headings
+    - Use bullet points for lists
+    - Use **bold** for emphasis
+    - Use > for important notes or quotes
   `;
   
   return generateText(prompt, { temperature: 0.3 });
@@ -161,6 +165,8 @@ export const extractActionItems = async (meetingNotes) => {
         "priority": "high/medium/low or null if not specified"
       }
     ]
+
+    Make sure to use double quotes for all property names and string values, and ensure the JSON is properly formatted.
   `;
   
   const response = await generateText(prompt, { temperature: 0.2 });
@@ -168,12 +174,53 @@ export const extractActionItems = async (meetingNotes) => {
     // Extract the JSON part from the response
     const jsonMatch = response.text.match(/\[\s*\{.*\}\s*\]/s);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      try {
+        // Try to parse the extracted JSON
+        return JSON.parse(jsonMatch[0]);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        
+        // Try to fix common JSON formatting issues
+        let fixedJson = jsonMatch[0]
+          // Replace single quotes with double quotes
+          .replace(/'/g, '"')
+          // Fix unquoted property names
+          .replace(/(\s*)(\w+)(\s*):(\s*)/g, '$1"$2"$3:$4')
+          // Fix trailing commas in arrays/objects
+          .replace(/,(\s*[\]}])/g, '$1');
+        
+        try {
+          return JSON.parse(fixedJson);
+        } catch (secondError) {
+          console.error('Failed to fix JSON:', secondError);
+          // Return a fallback empty array with an error message
+          return [{ 
+            description: "Could not parse action items. Please try reformatting your input.",
+            assignedTo: null,
+            dueDate: null,
+            priority: "high"
+          }];
+        }
+      }
     }
-    throw new Error('Could not parse action items from AI response');
+    
+    // If no JSON-like structure was found, return a fallback
+    console.warn('No JSON structure found in response');
+    return [{ 
+      description: "No action items detected. Please provide more detailed meeting notes.",
+      assignedTo: null,
+      dueDate: null,
+      priority: null
+    }];
   } catch (error) {
-    console.error('Error parsing action items:', error);
-    throw error;
+    console.error('Error processing action items:', error);
+    // Return a fallback instead of throwing
+    return [{ 
+      description: "Error processing action items: " + error.message,
+      assignedTo: null,
+      dueDate: null,
+      priority: null
+    }];
   }
 };
 
@@ -205,7 +252,12 @@ export const generateAgenda = async (previousMeetings, participants, meetingPurp
     3. Time for questions and next steps
     4. Total meeting duration recommendation
     
-    Format the agenda in a clear, professional way.
+    Format the agenda using Markdown:
+    - Use ## for main sections
+    - Use ### for subsections
+    - Use bullet points for lists
+    - Use **bold** for emphasis
+    - Use > for important notes
   `;
   
   return generateText(prompt, { temperature: 0.7 });
@@ -228,7 +280,15 @@ export const analyzeMeetingSentiment = async (meetingTranscript) => {
     Meeting Transcript:
     ${meetingTranscript}
     
-    Format the analysis as a JSON object.
+    Format the analysis as a JSON object with the following structure:
+    {
+      "sentiment": "positive/neutral/negative",
+      "engagement": "high/medium/low",
+      "keyMoments": "Description of key moments",
+      "participants": "Analysis of participant engagement"
+    }
+
+    Make sure to use double quotes for all property names and string values, and ensure the JSON is properly formatted.
   `;
   
   const response = await generateText(prompt, { temperature: 0.3 });
@@ -236,13 +296,46 @@ export const analyzeMeetingSentiment = async (meetingTranscript) => {
     // Extract the JSON part from the response
     const jsonMatch = response.text.match(/\{.*\}/s);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      try {
+        // Try to parse the extracted JSON
+        return JSON.parse(jsonMatch[0]);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        
+        // Try to fix common JSON formatting issues
+        let fixedJson = jsonMatch[0]
+          // Replace single quotes with double quotes
+          .replace(/'/g, '"')
+          // Fix unquoted property names
+          .replace(/(\s*)(\w+)(\s*):(\s*)/g, '$1"$2"$3:$4')
+          // Fix trailing commas in objects
+          .replace(/,(\s*\})/g, '$1');
+        
+        try {
+          return JSON.parse(fixedJson);
+        } catch (secondError) {
+          console.error('Failed to fix JSON:', secondError);
+          // Return a fallback with the text as analysis
+          return { 
+            analysis: response.text,
+            sentiment: "unknown",
+            engagement: "unknown"
+          };
+        }
+      }
     }
     // If JSON parsing fails, return the text response
-    return { analysis: response.text };
+    return { 
+      analysis: response.text,
+      sentiment: "unknown",
+      engagement: "unknown"
+    };
   } catch (error) {
     console.error('Error parsing sentiment analysis:', error);
-    return { analysis: response.text };
+    return { 
+      analysis: response.text,
+      error: error.message
+    };
   }
 };
 

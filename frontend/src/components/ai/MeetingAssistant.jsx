@@ -1,22 +1,35 @@
 import { useState, useEffect } from 'react';
-import { BiBot, BiRefresh, BiCopy, BiDownload, BiInfoCircle, BiHelpCircle, BiX, BiCheckCircle, BiChevronRight } from 'react-icons/bi';
+import { BiBot, BiRefresh, BiCopy, BiDownload, BiInfoCircle, BiHelpCircle, BiX, BiCheckCircle, BiChevronRight, BiChevronLeft } from 'react-icons/bi';
 import aiService from '../../services/ai';
 import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Error display component for better error visualization
 const ErrorDisplay = ({ error, onDismiss }) => {
   if (!error) return null;
   
-  let errorMessage = error;
+  let errorMessage = 'An unknown error occurred';
   let errorDetails = null;
   
-  // If error is an object with displayMessage
-  if (typeof error === 'object') {
-    errorMessage = error.displayMessage || error.message || 'An unknown error occurred';
-    
-    // Check if it's an API error
-    if (error.response?.data?.error) {
-      errorDetails = error.response.data.error.message;
+  // Handle different error formats
+  if (typeof error === 'string') {
+    errorMessage = error;
+  } else if (typeof error === 'object') {
+    // New error format
+    if (error.message) {
+      errorMessage = error.message;
+      errorDetails = error.details;
+    } 
+    // Legacy error format
+    else if (error.displayMessage || error.stack) {
+      errorMessage = error.displayMessage || error.message || 'An unknown error occurred';
+      errorDetails = error.stack;
+    }
+    // API error
+    else if (error.response?.data?.error) {
+      errorMessage = error.response.data.error.message || 'API Error';
+      errorDetails = JSON.stringify(error.response.data, null, 2);
     }
   }
   
@@ -36,7 +49,7 @@ const ErrorDisplay = ({ error, onDismiss }) => {
       <p className="text-slate-300 text-sm">{errorMessage}</p>
       {errorDetails && (
         <div className="mt-2 pt-2 border-t border-red-800/30">
-          <p className="text-slate-400 text-xs">{errorDetails}</p>
+          <p className="text-slate-400 text-xs whitespace-pre-wrap">{errorDetails}</p>
         </div>
       )}
       <div className="mt-3">
@@ -236,8 +249,22 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
           break;
         
         case 'actionItems':
-          const actionItems = await aiService.extractActionItems(inputText);
-          setResult({ type: 'actionItems', content: actionItems });
+          try {
+            const actionItems = await aiService.extractActionItems(inputText);
+            setResult({ type: 'actionItems', content: actionItems });
+          } catch (actionError) {
+            console.error('Action items extraction error:', actionError);
+            toast.error('Could not extract action items. Please try reformatting your input.');
+            setResult({ 
+              type: 'actionItems', 
+              content: [{ 
+                description: "Error extracting action items. Please try again with more structured notes.",
+                assignedTo: null,
+                dueDate: null,
+                priority: null
+              }] 
+            });
+          }
           break;
         
         case 'agenda':
@@ -250,8 +277,21 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
           break;
         
         case 'sentiment':
-          const sentiment = await aiService.analyzeMeetingSentiment(inputText);
-          setResult({ type: 'sentiment', content: sentiment });
+          try {
+            const sentiment = await aiService.analyzeMeetingSentiment(inputText);
+            setResult({ type: 'sentiment', content: sentiment });
+          } catch (sentimentError) {
+            console.error('Sentiment analysis error:', sentimentError);
+            toast.error('Could not analyze sentiment. Please try again.');
+            setResult({ 
+              type: 'sentiment', 
+              content: { 
+                analysis: "Error analyzing sentiment. Please try again with a more detailed transcript.",
+                sentiment: "unknown",
+                engagement: "unknown"
+              } 
+            });
+          }
           break;
         
         default:
@@ -259,8 +299,28 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
       }
     } catch (error) {
       console.error('AI Assistant error:', error);
-      setError(error);
-      toast.error(error.displayMessage || error.message || 'Error processing your request');
+      
+      // Create a user-friendly error message
+      let userErrorMessage = 'Error processing your request';
+      if (error.displayMessage) {
+        userErrorMessage = error.displayMessage;
+      } else if (error.message) {
+        // Clean up technical error messages
+        if (error.message.includes('SyntaxError')) {
+          userErrorMessage = 'Could not process the AI response format. Please try again.';
+        } else if (error.message.includes('network')) {
+          userErrorMessage = 'Network error. Please check your connection and try again.';
+        } else {
+          userErrorMessage = `Error: ${error.message}`;
+        }
+      }
+      
+      setError({
+        message: userErrorMessage,
+        details: error.stack || 'No additional details available'
+      });
+      
+      toast.error(userErrorMessage);
     } finally {
       setLoading(false);
     }
@@ -310,7 +370,31 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
       case 'agenda':
         return (
           <div className="whitespace-pre-line bg-slate-800/50 p-4 rounded-lg border border-indigo-900/20">
-            {result.content}
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // Style headings
+                h1: ({node, ...props}) => <h1 className="text-xl font-bold my-2 text-white" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-lg font-bold my-2 text-white" {...props} />,
+                h3: ({node, ...props}) => <h3 className="text-md font-bold my-1 text-white" {...props} />,
+                // Style paragraphs
+                p: ({node, ...props}) => <p className="mb-2" {...props} />,
+                // Style lists
+                ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-2" {...props} />,
+                ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-2" {...props} />,
+                // Style links
+                a: ({node, ...props}) => <a className="text-indigo-300 hover:underline" {...props} />,
+                // Style code blocks
+                code: ({node, inline, ...props}) => 
+                  inline 
+                    ? <code className="bg-slate-700 px-1 rounded text-xs" {...props} />
+                    : <code className="block bg-slate-700 p-2 rounded text-xs my-2 overflow-x-auto" {...props} />,
+                // Style blockquotes
+                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-indigo-500 pl-3 italic my-2" {...props} />,
+              }}
+            >
+              {result.content}
+            </ReactMarkdown>
           </div>
         );
       

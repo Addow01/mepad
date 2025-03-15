@@ -3,6 +3,8 @@ import { BiBot, BiSend, BiX, BiInfoCircle, BiLoader } from 'react-icons/bi';
 import { generateText } from '../../services/ai';
 import toast from 'react-hot-toast';
 import { meetings } from '../../services/api';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const ChatMessage = ({ message, isUser }) => {
   return (
@@ -20,7 +22,35 @@ const ChatMessage = ({ message, isUser }) => {
             <span className="text-xs font-medium text-indigo-300">MePad Assistant</span>
           </div>
         )}
-        <div className="whitespace-pre-wrap">{message}</div>
+        <div className="whitespace-pre-wrap markdown-content">
+          {isUser ? message : (
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // Style headings
+                h1: ({node, ...props}) => <h1 className="text-xl font-bold my-2 text-white" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-lg font-bold my-2 text-white" {...props} />,
+                h3: ({node, ...props}) => <h3 className="text-md font-bold my-1 text-white" {...props} />,
+                // Style paragraphs
+                p: ({node, ...props}) => <p className="mb-2" {...props} />,
+                // Style lists
+                ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-2" {...props} />,
+                ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-2" {...props} />,
+                // Style links
+                a: ({node, ...props}) => <a className="text-indigo-300 hover:underline" {...props} />,
+                // Style code blocks
+                code: ({node, inline, ...props}) => 
+                  inline 
+                    ? <code className="bg-slate-700 px-1 rounded text-xs" {...props} />
+                    : <code className="block bg-slate-700 p-2 rounded text-xs my-2 overflow-x-auto" {...props} />,
+                // Style blockquotes
+                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-indigo-500 pl-3 italic my-2" {...props} />,
+              }}
+            >
+              {message}
+            </ReactMarkdown>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -112,7 +142,12 @@ INSTRUCTIONS:
 3. If the user asks about how to use MePad features, provide helpful guidance.
 4. If the user asks something outside the scope of MePad, politely redirect them to MePad-related topics.
 5. Keep responses concise, friendly, and helpful.
-6. Format your response in a clear, readable way.
+6. Format your response using Markdown:
+   - Use **bold** for emphasis
+   - Use headings (## or ###) for section titles
+   - Use bullet points or numbered lists where appropriate
+   - Use code blocks for any code or structured data
+   - Use > for quotes or important notes
 7. If you don't have specific information requested, acknowledge that and suggest what the user could do instead.
 
 Your response:`;
