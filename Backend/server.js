@@ -13,6 +13,8 @@ connectDB();
 const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
     'http://localhost:5173',
     'http://localhost:8080'
 ];
@@ -24,7 +26,13 @@ if (process.env.FRONTEND_URL) {
 
 // Add the CORS_ORIGIN from environment variable if it exists
 if (process.env.CORS_ORIGIN) {
-    allowedOrigins.push(process.env.CORS_ORIGIN);
+    // Split by comma if it's a comma-separated list
+    const corsOrigins = process.env.CORS_ORIGIN.split(',');
+    corsOrigins.forEach(origin => {
+        if (origin.trim() && !allowedOrigins.includes(origin.trim())) {
+            allowedOrigins.push(origin.trim());
+        }
+    });
 }
 
 const corsOptions = {
@@ -32,7 +40,7 @@ const corsOptions = {
         // Allow requests with no origin (like mobile apps, curl requests)
         if (!origin) return callback(null, true);
         
-        if (allowedOrigins.indexOf(origin) !== -1) {
+        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
             callback(null, true);
         } else {
             console.log('Blocked by CORS:', origin);

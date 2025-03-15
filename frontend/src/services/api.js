@@ -5,7 +5,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    withCredentials: true
+    withCredentials: false
 });
 
 // Request interceptor
@@ -68,11 +68,11 @@ export const meetings = {
 };
 
 export const invitations = {
-    verify: (token) => api.get(`/api/invite/${token}`),
-    accept: (token) => api.put(`/api/invite/${token}/status`, { status: 'accepted' }),
-    decline: (token) => api.put(`/api/invite/${token}/status`, { status: 'declined' }),
-    getInvitation: (token) => api.get(`/api/invite/${token}`),
-    updateInvitationStatus: (token, data) => api.put(`/api/invite/${token}/status`, data)
+    verify: (token) => api.get(`/invite/${token}`),
+    accept: (token) => api.put(`/invite/${token}/status`, { status: 'accepted' }),
+    decline: (token) => api.put(`/invite/${token}/status`, { status: 'declined' }),
+    getInvitation: (token) => api.get(`/invite/${token}`),
+    updateInvitationStatus: (token, data) => api.put(`/invite/${token}/status`, data)
 };
 
 export const dashboard = {
