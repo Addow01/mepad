@@ -8,9 +8,9 @@ import remarkGfm from 'remark-gfm';
 
 const ChatMessage = ({ message, isUser }) => {
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
       <div
-        className={`max-w-[80%] rounded-lg p-3 ${
+        className={`max-w-[85%] rounded-lg p-2.5 ${
           isUser
             ? 'bg-indigo-600 text-white rounded-tr-none'
             : 'bg-slate-800/70 text-white rounded-tl-none'
@@ -18,33 +18,33 @@ const ChatMessage = ({ message, isUser }) => {
       >
         {!isUser && (
           <div className="flex items-center gap-2 mb-1 pb-1 border-b border-slate-700/50">
-            <BiBot className="text-indigo-400" />
+            <BiBot className="text-indigo-400 text-sm" />
             <span className="text-xs font-medium text-indigo-300">MePad Assistant</span>
           </div>
         )}
-        <div className="whitespace-pre-wrap markdown-content">
+        <div className="whitespace-pre-wrap markdown-content text-sm">
           {isUser ? message : (
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
               components={{
                 // Style headings
-                h1: ({node, ...props}) => <h1 className="text-xl font-bold my-2 text-white" {...props} />,
-                h2: ({node, ...props}) => <h2 className="text-lg font-bold my-2 text-white" {...props} />,
-                h3: ({node, ...props}) => <h3 className="text-md font-bold my-1 text-white" {...props} />,
+                h1: ({node, ...props}) => <h1 className="text-lg font-bold my-1.5 text-white" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-base font-bold my-1.5 text-white" {...props} />,
+                h3: ({node, ...props}) => <h3 className="text-sm font-bold my-1 text-white" {...props} />,
                 // Style paragraphs
-                p: ({node, ...props}) => <p className="mb-2" {...props} />,
+                p: ({node, ...props}) => <p className="mb-1.5" {...props} />,
                 // Style lists
-                ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-2" {...props} />,
-                ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-2" {...props} />,
+                ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-1.5" {...props} />,
+                ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-1.5" {...props} />,
                 // Style links
                 a: ({node, ...props}) => <a className="text-indigo-300 hover:underline" {...props} />,
                 // Style code blocks
                 code: ({node, inline, ...props}) => 
                   inline 
                     ? <code className="bg-slate-700 px-1 rounded text-xs" {...props} />
-                    : <code className="block bg-slate-700 p-2 rounded text-xs my-2 overflow-x-auto" {...props} />,
+                    : <code className="block bg-slate-700 p-1.5 rounded text-xs my-1.5 overflow-x-auto" {...props} />,
                 // Style blockquotes
-                blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-indigo-500 pl-3 italic my-2" {...props} />,
+                blockquote: ({node, ...props}) => <blockquote className="border-l-3 border-indigo-500 pl-2 italic my-1.5 text-xs" {...props} />,
               }}
             >
               {message}
@@ -178,27 +178,27 @@ Your response:`;
   };
 
   return (
-    <div className="bg-slate-900/30 backdrop-blur-md rounded-xl p-4 border border-indigo-900/20 shadow-xl flex flex-col h-[500px]">
-      <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-700/50">
+    <div className="bg-slate-900/30 backdrop-blur-md rounded-xl p-3 border border-indigo-900/20 shadow-xl flex flex-col h-[500px]">
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-700/50">
         <div className="flex items-center gap-2">
-          <BiBot className="text-2xl text-indigo-400" />
-          <h2 className="text-lg font-semibold text-white">MePad Assistant</h2>
+          <BiBot className="text-xl text-indigo-400" />
+          <h2 className="text-base font-semibold text-white">MePad Assistant</h2>
         </div>
-        <div className="bg-indigo-900/20 text-xs text-indigo-300 px-2 py-1 rounded-full">
+        <div className="bg-indigo-900/20 text-xs text-indigo-300 px-2 py-0.5 rounded-full">
           AI Powered
         </div>
       </div>
 
       {/* Info Banner */}
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 mb-4 flex items-start gap-2">
-        <BiInfoCircle className="text-indigo-400 text-lg flex-shrink-0 mt-0.5" />
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-2 mb-3 flex items-start gap-2">
+        <BiInfoCircle className="text-indigo-400 text-base flex-shrink-0 mt-0.5" />
         <div className="text-xs text-slate-300">
           Ask me about your meetings, dashboard data, or how to use MePad features. I'm here to help!
         </div>
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-2 py-1 mb-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto px-2 py-1 mb-3 custom-scrollbar">
         {messages.map((message) => (
           <ChatMessage
             key={message.id}
@@ -207,10 +207,10 @@ Your response:`;
           />
         ))}
         {loading && (
-          <div className="flex justify-start mb-4">
-            <div className="bg-slate-800/70 text-white rounded-lg p-3 rounded-tl-none flex items-center gap-2">
+          <div className="flex justify-start mb-3">
+            <div className="bg-slate-800/70 text-white rounded-lg p-2 rounded-tl-none flex items-center gap-2">
               <BiLoader className="animate-spin text-indigo-400" />
-              <span className="text-slate-300">Thinking...</span>
+              <span className="text-slate-300 text-xs">Thinking...</span>
             </div>
           </div>
         )}
@@ -224,19 +224,19 @@ Your response:`;
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about your meetings or dashboard..."
-          className="flex-1 bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="flex-1 bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           disabled={loading}
         />
         <button
           type="submit"
           disabled={!input.trim() || loading}
-          className={`p-2 rounded-lg ${
+          className={`p-1.5 rounded-lg ${
             !input.trim() || loading
               ? 'bg-indigo-700/50 text-indigo-300/50 cursor-not-allowed'
               : 'bg-indigo-600 text-white hover:bg-indigo-700'
           }`}
         >
-          <BiSend className="text-xl" />
+          <BiSend className="text-lg" />
         </button>
       </form>
     </div>

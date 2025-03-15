@@ -369,7 +369,7 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
       case 'summary':
       case 'agenda':
         return (
-          <div className="whitespace-pre-line bg-slate-800/50 p-4 rounded-lg border border-indigo-900/20">
+          <div className="whitespace-pre-line bg-slate-800/50 p-4 rounded-lg border border-indigo-900/20 max-h-[400px] overflow-y-auto custom-scrollbar">
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
               components={{
@@ -400,24 +400,24 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
       
       case 'actionItems':
         return (
-          <div className="space-y-3">
+          <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar pr-1">
             {Array.isArray(result.content) ? (
               result.content.map((item, index) => (
-                <div key={index} className="bg-slate-800/50 p-4 rounded-lg border border-indigo-900/20">
-                  <h4 className="font-medium text-white">{item.description}</h4>
+                <div key={index} className="bg-slate-800/50 p-3 rounded-lg border border-indigo-900/20">
+                  <h4 className="font-medium text-white text-sm">{item.description}</h4>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {item.assignedTo && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-indigo-500/20 text-indigo-300">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-indigo-500/20 text-indigo-300">
                         Assigned to: {item.assignedTo}
                       </span>
                     )}
                     {item.dueDate && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-violet-500/20 text-violet-300">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-violet-500/20 text-violet-300">
                         Due: {item.dueDate}
                       </span>
                     )}
                     {item.priority && (
-                      <span className="px-2 py-1 text-xs rounded-full bg-fuchsia-500/20 text-fuchsia-300">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-fuchsia-500/20 text-fuchsia-300">
                         Priority: {item.priority}
                       </span>
                     )}
@@ -425,8 +425,8 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
                 </div>
               ))
             ) : (
-              <div className="bg-slate-800/50 p-4 rounded-lg border border-indigo-900/20">
-                <p className="text-slate-300">No action items found or could not parse the response.</p>
+              <div className="bg-slate-800/50 p-3 rounded-lg border border-indigo-900/20">
+                <p className="text-slate-300 text-sm">No action items found or could not parse the response.</p>
               </div>
             )}
           </div>
@@ -434,42 +434,42 @@ export default function MeetingAssistant({ meetingId, meetingData }) {
       
       case 'sentiment':
         return (
-          <div className="bg-slate-800/50 p-4 rounded-lg border border-indigo-900/20">
+          <div className="bg-slate-800/50 p-4 rounded-lg border border-indigo-900/20 max-h-[400px] overflow-y-auto custom-scrollbar">
             {typeof result.content === 'object' ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {result.content.sentiment && (
                   <div>
-                    <h4 className="text-sm font-medium text-slate-300">Overall Sentiment</h4>
-                    <p className="text-white font-medium">{result.content.sentiment}</p>
+                    <h4 className="text-xs font-medium text-slate-300">Overall Sentiment</h4>
+                    <p className="text-white font-medium text-sm">{result.content.sentiment}</p>
                   </div>
                 )}
                 {result.content.engagement && (
                   <div>
-                    <h4 className="text-sm font-medium text-slate-300">Engagement Level</h4>
-                    <p className="text-white font-medium">{result.content.engagement}</p>
+                    <h4 className="text-xs font-medium text-slate-300">Engagement Level</h4>
+                    <p className="text-white font-medium text-sm">{result.content.engagement}</p>
                   </div>
                 )}
                 {result.content.keyMoments && (
                   <div>
-                    <h4 className="text-sm font-medium text-slate-300">Key Moments</h4>
-                    <p className="text-white">{result.content.keyMoments}</p>
+                    <h4 className="text-xs font-medium text-slate-300">Key Moments</h4>
+                    <p className="text-white text-sm">{result.content.keyMoments}</p>
                   </div>
                 )}
                 {result.content.participants && (
                   <div>
-                    <h4 className="text-sm font-medium text-slate-300">Participant Engagement</h4>
-                    <p className="text-white">{result.content.participants}</p>
+                    <h4 className="text-xs font-medium text-slate-300">Participant Engagement</h4>
+                    <p className="text-white text-sm">{result.content.participants}</p>
                   </div>
                 )}
                 {result.content.analysis && (
                   <div>
-                    <h4 className="text-sm font-medium text-slate-300">Analysis</h4>
-                    <p className="text-white">{result.content.analysis}</p>
+                    <h4 className="text-xs font-medium text-slate-300">Analysis</h4>
+                    <p className="text-white text-sm">{result.content.analysis}</p>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-white">{JSON.stringify(result.content)}</p>
+              <p className="text-white text-sm">{JSON.stringify(result.content)}</p>
             )}
           </div>
         );
