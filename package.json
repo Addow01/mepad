@@ -1,0 +1,23 @@
+{
+  "name": "mepad",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "Backend"
+  ],
+  "scripts": {
+    "start": "cd frontend && npm run dev",
+    "start:backend": "cd Backend && npm run dev",
+    "build": "bash ./build.sh",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "build:backend": "cd Backend && npm install",
+    "install:all": "npm install && npm run install:frontend && npm run install:backend",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd Backend && npm install",
+    "vercel-build": "bash ./build.sh"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+} 

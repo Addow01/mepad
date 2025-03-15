@@ -1,0 +1,8 @@
+# Ignore everything except frontend
+*
+!frontend/
+!frontend/**
+!vercel.json
+
+# Ignore node_modules in frontend
+frontend/node_modules/ 
